@@ -13,9 +13,31 @@ def rod_cutting_memo(length: int, prices: List[int]) -> Dict:
         Dict з максимальним прибутком та списком розрізів
     """
 
-    # Тут повинен бути ваш код
+    memo = {}
 
-    return {"max_profit": None, "cuts": None, "number_of_cuts": None}
+    def dfs(n):
+        if n == 0:
+            return 0, []
+        if n in memo:
+            return memo[n]
+
+        max_profit = float("-inf")
+        best_cuts = []
+
+        for i in range(1, n + 1):
+            if i <= len(prices):
+                profit, cuts = dfs(n - i)
+                profit += prices[i - 1]
+                if profit > max_profit:
+                    max_profit = profit
+                    best_cuts = cuts + [i]
+
+        memo[n] = (max_profit, best_cuts)
+        return memo[n]
+
+    max_profit, cuts = dfs(length)
+
+    return {"max_profit": max_profit, "cuts": cuts, "number_of_cuts": len(cuts) - 1 if len(cuts) > 0 else 0}
 
 
 def rod_cutting_table(length: int, prices: List[int]) -> Dict:
@@ -30,9 +52,28 @@ def rod_cutting_table(length: int, prices: List[int]) -> Dict:
         Dict з максимальним прибутком та списком розрізів
     """
 
-    # Тут повинен бути ваш код
+    dp = [0] * (length + 1)
 
-    return {"max_profit": None, "cuts": None, "number_of_cuts": None}
+    cut_choice = [[-1] for _ in range(length + 1)]
+
+    for i in range(1, length + 1):
+        for j in range(1, i + 1):
+            if j <= len(prices):
+                if dp[i] < prices[j - 1] + dp[i - j]:
+                    dp[i] = prices[j - 1] + dp[i - j]
+                    cut_choice[i] = j
+
+    cuts = []
+    n = length
+    while n > 0:
+        cuts.append(cut_choice[n])
+        n -= cut_choice[n]
+
+    return {
+        "max_profit": dp[length],
+        "cuts": cuts,
+        "number_of_cuts": len(cuts) - 1 if len(cuts) > 0 else 0
+    }
 
 
 def run_tests():
